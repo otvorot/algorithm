@@ -2,6 +2,140 @@
 
 
 <details>
+<summary>суперструнная гравитация</summary>
+
+## условие
+Учёные открыли новую форму гравитации — суперструнную, действующую между двумя частицами, существующими в пространствах разной размерности.
+
+Описание
+
+- Частица ***A*** существует в ***n***-мерном пространстве и имеет координаты:  
+  ***a₁, a₂, …, aₙ***.
+- Частица ***B*** существует в ***m***-мерном пространстве и имеет координаты:  
+  ***b₁, b₂, …, bₘ***.
+
+Сила гравитации между частицами вычисляется по необычной формуле:
+
+$$
+\sum_{i=1}^{n} \sum_{j=1}^{m} (i - j) \cdot |a_i - b_j|
+$$
+
+То есть сумма по всем парам координат (по каждой из ***n*** координат частицы ***A*** и каждой из ***m*** координат частицы ***B***), где каждое слагаемое — произведение:
+- разности индексов: ***i − j***,
+- и модуля разности значений координат: ***|a_i − b_j|***.
+
+Формат ввода
+
+- Первая строка: целое число ***n*** — размерность пространства частицы ***A*** (***1 ≤ n ≤ 10⁵***).
+- Вторая строка: ***n*** целых чисел ***a_i*** — координаты частицы ***A*** (***1 ≤ a_i ≤ 10⁴***).
+- Третья строка: целое число ***m*** — размерность пространства частицы ***B*** (***1 ≤ m ≤ 10⁵***).
+- Четвёртая строка: ***m*** целых чисел ***b_i*** — координаты частицы ***B*** (***1 ≤ b_i ≤ 10⁴***).
+
+
+Формат вывода
+
+Выведите одно число — значение силы гравитации, вычисленное по формуле:
+
+$$
+\sum_{i,j} (i - j) \cdot |a_i - b_j|
+$$
+
+Результат может быть как положительным, так и отрицательным — выводите его **точно**, без округления.
+
+
+## идея решения
+Прямое вычисление этой суммы заняло бы ***O(nm)*** времени, что при ***n, m ≤ 10⁵*** неприемлемо. Вместо этого используется **оптимизированный подход** с разбиением суммы и использованием **сортировки и префиксных сумм** для быстрого подсчёта сумм модулей.
+
+Разложим исходную формулу:
+
+$$
+\sum_{i,j} (i - j) \cdot |a_i - b_j| = \underbrace{\sum_{i,j} i \cdot |a_i - b_j|}_{\text{левая часть}} - \underbrace{\sum_{i,j} j \cdot |a_i - b_j|}_{\text{правая часть}}
+$$
+
+Обозначим:
+- ***left = ∑ᵢ i ⋅ (∑ⱼ |a_i − b_j|)***
+- ***right = ∑ⱼ j ⋅ (∑ᵢ |a_i − b_j|)***
+
+Тогда ответ: ***left − right***
+
+Каждую из этих сумм можно вычислить за ***O(n log m)*** или ***O(m log n)***, используя **сортировку и бинарный поиск**.
+
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+long weightsum(
+    std::vector<long long>& a,
+    std::vector<long long>& b,
+    std::vector<long long>& sorted,
+    std::vector<long long>& prefix
+) {
+    long long sum = 0;
+    for (int i = 0; i < a.size(); ++i) {
+        long long ai = a[i];
+        int pos = std::upper_bound(sorted.begin(), sorted.end(), ai) - sorted.begin();
+        long long left = pos * ai - prefix[pos];
+        long long right = prefix.back() - prefix[pos] - ai * (sorted.size() - pos);
+        sum += i * (left + right);
+    }
+
+    return sum;
+}
+
+int main() {
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+
+    std::vector<long long> a;
+    std::vector<long long> b;
+    std::vector<long long> sorted;
+    std::vector<long long> prefix;
+
+    int n;
+    std::cin >> n;
+    a.resize(n);
+
+    for (int i = 0; i < n; ++i) {
+        std::cin >> a[i];
+    }
+
+    int m;
+    std::cin >> m;
+    sorted.resize(m);
+    prefix.resize(m + 1);
+    b.resize(m);
+    for (int i = 0; i < m; ++i) {
+        std::cin >> b[i];
+        sorted[i] = b[i];
+    }
+
+    std::sort(sorted.begin(), sorted.end());
+
+    for (int i = 1; i < prefix.size(); ++i) {
+        prefix[i] = prefix[i - 1] + sorted[i - 1];
+    }
+
+    long long left = weightsum(a, b, sorted, prefix);
+
+    sorted = a;
+    std::sort(sorted.begin(), sorted.end());
+    prefix.resize(n + 1);
+    for (int i = 1; i < prefix.size(); ++i) {
+        prefix[i] = prefix[i - 1] + sorted[i - 1];
+    }
+
+    long long right = weightsum(b, a, sorted, prefix);
+
+    std::cout << left - right << '\n';
+}
+```
+
+</details>
+
+
+<details>
 <summary>кибербезопасность</summary>
 
 ## условие
@@ -225,20 +359,3 @@ int main() {
 
 </details>
 
-
-<details>
-<summary>разрезаная строка</summary>
-
-## условие
-
-
-
-## идея решения
-
-
-
-```cpp
-
-```
-
-</details>
